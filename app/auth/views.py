@@ -6,7 +6,7 @@ from flask_login import login_user, login_required, current_user, logout_user
 from app import db
 from . import auth
 from ..models import User
-from forms import LoginForm, RegistrationForm, ChangePasswordForm, ForgotPasswordForm, ResetPasswordForm
+from forms import LoginForm, RegistrationForm, ChangePasswordForm, ForgotPasswordForm, ResetPasswordForm, ResetEmailForm
 from ..email import send_email
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -138,3 +138,28 @@ def resetPassword(token):
         else:
             return redirect(url_for('main.index'))
     return render_template('auth/updatePWD.html', form=form)
+
+@auth.route('/resetEmail', methods=['GET', 'POST'])
+@login_required
+def resetEmailRequest():
+    form = ResetEmailForm()
+    if form.validate_on_submit():
+        if current_user.verify_password(form.password.data):
+            email = form.email.data
+            token = current_user.generate_email_token(email)
+            send_email(email, 'Reset Email', 'auth/email/resetEmail',
+                       user=current_user, token=token)
+            flash('The email with resetEmail link has been sent to you. Check your inbox! ')
+            return redirect(url_for('main.index'))
+        else:
+            flash('Invalid email or password.')
+    return render_template("auth/resetEmail.html", form=form)
+
+@auth.route('/resetEmail/<token>')
+@login_required
+def reset_Email(token):
+    if current_user.reset_Email(token):
+        flash('Your email address has been updated.')
+    else:
+        flash('Invalid request.')
+    return redirect(url_for('main.index'))

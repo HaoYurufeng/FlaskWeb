@@ -47,3 +47,12 @@ class ResetPasswordForm(Form):
                                                          EqualTo('Con_password', message='Passwords must match.')])
     Con_password = PasswordField('Confirm Password', validators=[Required()])
     submit = SubmitField('Reset Password')
+
+class ResetEmailForm(Form):
+    email = StringField('New Email', validators=[Required(), Length(1, 64), Email()])
+    password = PasswordField('Password', validators=[Required()])
+    submit = SubmitField('Confirm')
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first():
+            raise ValidationError('Email already registered.')
