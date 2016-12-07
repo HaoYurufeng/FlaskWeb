@@ -6,7 +6,7 @@ from flask_login import login_user, login_required, current_user, logout_user
 from app import db
 from . import auth
 from ..models import User
-from forms import LoginForm, RegistrationForm
+from forms import LoginForm, RegistrationForm, ChangePasswordForm
 from ..email import send_email
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -73,3 +73,22 @@ def resend_confirmation():
     send_email(current_user.email, 'Confirm Your Account', 'auth/email/confirm', user=current_user, token=token)
     flash('A new confirmation email has been sent to you by email.')
     return redirect(url_for('main.index'))
+
+
+@auth.route('/change_pwd', methods=['GET', 'POST'])
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if form.new_password.data is None:
+            flash('Password can not be Null!')
+        elif form.new_password.data is not None and current_user.verify_password(form.old_password.data):
+            current_user.password = form.new_password.data
+            db.session.add(current_user)
+            db.session.commit()
+            send_email(current_user.email, 'Password Changed', 'auth/email/resetpwd', user=current_user)
+            flash('You have successfully changed your password! Please log in again!')
+            logout_user()
+            return redirect(url_for('auth.login'))
+        else:
+            flash('Password incorrect, please re-enter!')
+    return render_template('auth/updatePWD.html', form=form)
