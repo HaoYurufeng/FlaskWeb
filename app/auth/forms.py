@@ -36,3 +36,14 @@ class ChangePasswordForm(Form):
     Con_password = PasswordField('Confirm Password', validators=[Required()])
     submit = SubmitField('Update Password')
 
+class ForgotPasswordForm(Form):
+    email = StringField('Email', validators=[Required()])
+    username = StringField('Username', validators=[Required()])
+    submit = SubmitField('Confirm')
+
+class ResetPasswordForm(Form):
+    email = StringField('Email', validators=[Required()])
+    password = PasswordField('New Password', validators=[Required(),
+                                                         EqualTo('Con_password', message='Passwords must match.')])
+    Con_password = PasswordField('Confirm Password', validators=[Required()])
+    submit = SubmitField('Reset Password')

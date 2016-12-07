@@ -6,7 +6,7 @@ from flask_login import login_user, login_required, current_user, logout_user
 from app import db
 from . import auth
 from ..models import User
-from forms import LoginForm, RegistrationForm, ChangePasswordForm
+from forms import LoginForm, RegistrationForm, ChangePasswordForm, ForgotPasswordForm, ResetPasswordForm
 from ..email import send_email
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -91,4 +91,50 @@ def change_password():
             return redirect(url_for('auth.login'))
         else:
             flash('Password incorrect, please re-enter!')
+    return render_template('auth/updatePWD.html', form=form)
+
+
+@auth.route('/resetpwd', methods=['GET', 'POST'])
+def forgot_pwd():
+    """判断当前用户是否登录"""
+    if not current_user.is_anonymous:
+        logout_user()
+        return redirect(url_for('auth.forgot_pwd'))
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+
+        """
+        if User.query.filter_by(email=form.email.data, username=form.username.data).first():
+            send_email(form.email.data, 'Reset Password', 'auth/email/forgotpwd', user=form.username.data)
+        """
+
+        user = User.query.filter_by(email=form.email.data).first()
+
+        """使用token"""
+
+        if user:
+            token = user.generate_reset_token()
+            send_email(user.email, 'Reset Password', 'auth/email/forgotpwd', user=user,
+                       token=token, next=request.args.get('next'))
+            flash('The email with resetPassword link has been sent to you. Check your inbox! ')
+            return redirect(url_for('auth.login'))
+        else:
+            flash('This email is not registered. Check your email address.')
+    return render_template('auth/forgot_pwd.html', form=form)
+
+@auth.route('/resetpwd/<token>', methods=['GET', 'POST'])
+def resetPassword(token):
+    if not current_user.is_anonymous:
+        return redirect(url_for('main.index'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is None:
+            flash('This email is not registered. Check your email address.')
+        if user.reset_password(token, form.password.data):
+            send_email(current_user.email, 'Password Changed', 'auth/email/resetpwd', user=user)
+            flash('Successfully Reset! Please login again.')
+            return redirect(url_for('auth.login'))
+        else:
+            return redirect(url_for('main.index'))
     return render_template('auth/updatePWD.html', form=form)

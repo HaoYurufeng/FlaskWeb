@@ -1,0 +1,15 @@
+Hello {{ user.username }},
+
+We heard that you lost your FlaskWeb password. Sorry about that!
+But don’t worry! You can use the following link within the next day to reset your password:
+{{ url_for('auth.resetPassword', token=token, _external=True) }}
+If you don’t use this link within 24 hours, it will expire.
+If this wasn’t you, please ignore this email.
+
+
+Sincerely,
+The Flasky Team
+
+Note: replies to this email address are not monitored.
+
+
