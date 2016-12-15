@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}FlaskWeb - About me{% endblock %}
+
+{% block page_content %}
+    <h2>个人信息</h2>
+    <p>以下信息将显示在个人资料页，方便大家了解你。</p>
+    <p></p>
+    {{ wtf.quick_form(form) }}
+{% endblock %}

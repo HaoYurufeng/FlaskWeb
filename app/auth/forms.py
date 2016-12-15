@@ -56,3 +56,11 @@ class ResetEmailForm(Form):
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')
+
+class InformationForm(Form):
+    nickname = StringField('Nickname', validators=[Required()])
+    name = StringField('Name', validators=[Required()])
+    location = StringField('Location', validators=[Required()])
+    about_me = StringField('Self-Introduce', validators=[Required()])
+    submit = SubmitField('Save')
+

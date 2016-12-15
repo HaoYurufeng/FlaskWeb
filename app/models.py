@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf8 -*-
 
+from datetime import datetime
 from flask import current_app
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -60,6 +61,12 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=True)
 
+    name = db.Column(db.String(64))
+    location = db.Column(db.String(64))
+    about_me = db.Column(db.Text())
+    member_since = db.Column(db.DateTime(), default=datetime.utcnow)
+    last_login = db.Column(db.DateTime(), default=datetime.utcnow)
+
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
@@ -67,6 +74,10 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(permissions=0xff).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
+
+    def ping(self):
+        self.last_login = datetime.utcnow()
+        db.session.add(self)
 
     def can(self, permissions):
         return self.role is not None and (self.role.permissions & permissions) == permissions

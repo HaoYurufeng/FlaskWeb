@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}FlaskWeb - About me{% endblock %}
+
+{% block page_content %}
+    <h2>账户安全</h2>
+    <p><a href="{{ url_for('auth.resetEmailRequest') }}">修改账户邮箱</a></p>
+    <p></p>
+    <p><a href="{{ url_for('auth.change_password') }}">修改账户密码</a></p>
+{% endblock %}
