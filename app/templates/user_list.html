@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}FlaskWeb{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>User List</h1>
+</div>
+
+<div class="container">
+    {% for user in list %}
+        <div>
+            <p><a href="{{ url_for('main.edit_profile_admin', username=user) }}">{{ user }}</a></p>
+        </div>
+    {% endfor %}
+</div>
+
+<p>The local date and time is {{ moment(current_time).format('LLLL') }}.</p>
+<p>That was {{ moment(current_time).fromNow(refresh=True) }}.</p>
+{% endblock %}

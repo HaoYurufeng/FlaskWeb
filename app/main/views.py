@@ -22,12 +22,11 @@ def user(username):
         abort(404)
     return render_template('user.html', user=user)
 
-@main.route('/edit-profile/<int:id>',methods=['GET', 'POST'])
+@main.route('/edit-profile/<username>', methods=['GET', 'POST'])
 @login_required
-@admin_required
-def edit_profile_admin(id):
-    user = User.query.get_or_404(id)
-    form = EditProfileAdminForm(user=user)
+def edit_profile_admin(username):
+    user = User.query.get_or_404(username)
+    form = EditProfileAdminForm()
     if form.validate_on_submit():
         user.email = form.email.data
         user.username = form.username.data
@@ -46,4 +45,14 @@ def edit_profile_admin(id):
     form.name.data = user.name
     form.location.data = user.location
     form.about_me.data = user.about_me
-    return render_template('edit_profile.html', form=form, user=user)
+    return render_template('auth/../templates/edit_profile.html', form=form, user=user)
+
+@main.route('/user-list', methods=['GET'])
+@login_required
+@admin_required
+def output_user_list():
+    users = User.query.all()
+    list = []
+    for user in users:
+        list.append(user.username)
+    return render_template('user_list.html', list=list, current_time=datetime.utcnow())

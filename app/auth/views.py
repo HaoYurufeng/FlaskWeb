@@ -170,7 +170,7 @@ def reset_Email(token):
         flash('Invalid request.')
     return redirect(url_for('main.index'))
 
-@auth.route('/edit_profile',methods=['GET', 'POST'])
+@auth.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def account_information():
     form = InformationForm()

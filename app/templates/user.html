@@ -4,12 +4,13 @@
 
 {% block page_content%}
 <div class="page-header">
+    <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}">
     <h1>{{ user.username }}</h1>
     {% if user.name or user.location %}
     <p>
         {% if user.name %}{{ user.name }}{% endif %}
         {% if user.location %}
-            From<a href="http://maps.google.com/?={{ user.location }}">{{ user.location }}</a>
+            From <a href="http://maps.google.com/?={{ user.location }}">{{ user.location }}</a>
         {% endif %}
     </p>
     {% endif %}
@@ -23,12 +24,8 @@
     </p>
     <p></p>
     <p>
-        {% if user == current_user and not current_user.is_administrator() %}
+        {% if user == current_user %}
         <a class="btn btn-danger" href="{{ url_for('auth.account_information') }}">Edit Profile</a>
-        {% endif %}
-        {% if current_user.is_administrator() %}
-        <a class="btn btn-danger" href="{{ url_for('main.edit_profile_admin', id=user.id) }}">
-        Edit Profile [Admin]</a>
         {% endif %}
     </p>
 </div>
