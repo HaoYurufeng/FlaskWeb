@@ -23,10 +23,14 @@
         Last login {{ moment(user.last_login).fromNow() }}
     </p>
     <p></p>
+    <p>{{ user.posts.count() }} blog posts.</p>
+    <p></p>
     <p>
         {% if user == current_user %}
         <a class="btn btn-danger" href="{{ url_for('auth.account_information') }}">Edit Profile</a>
         {% endif %}
     </p>
 </div>
-{%endblock%}
+<h3>Posts by {{ user.username }}</h3>
+{% include '_posts.html' %}
+{% endblock %}
