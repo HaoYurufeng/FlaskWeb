@@ -14,7 +14,7 @@ from flask_login import login_required, current_user
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
-    if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
+    if form.validate_on_submit():
         post = Post(body=form.body.data, author=current_user._get_current_object())
         db.session.add(post)
         return redirect(url_for('.index'))
@@ -29,11 +29,13 @@ def user(username):
     posts = user.posts.order_by(Post.timestamp.desc()).all()
     return render_template('user.html', user=user, posts=posts)
 
-@main.route('/edit-profile/<username>', methods=['GET', 'POST'])
+@main.route('/edit-profile/<string:username>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_profile_admin(username):
-    user = User.query.get(username)
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        abort(404)
     form = EditProfileAdminForm(user)
     if form.validate_on_submit():
         user.email = form.email.data
@@ -53,7 +55,7 @@ def edit_profile_admin(username):
     form.name.data = user.name
     form.location.data = user.location
     form.about_me.data = user.about_me
-    return render_template('auth/../templates/edit_profile.html', form=form, user=user)
+    return render_template('edit_profile.html', form=form, user=user)
 
 @main.route('/user-list', methods=['GET'])
 @login_required
