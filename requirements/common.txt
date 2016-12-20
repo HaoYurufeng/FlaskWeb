@@ -15,12 +15,14 @@ dominate==2.3.0
 enum34==1.1.6
 Flask==0.11.1
 Flask-Bootstrap==3.3.7.0
+Flask-Login==0.4.0
 Flask-Mail==0.9.1
 Flask-Migrate==2.0.1
 Flask-Moment==0.5.1
 Flask-Script==2.0.5
 Flask-SQLAlchemy==2.1
 Flask-WTF==0.13.1
+ForgeryPy==0.1
 incremental==16.10.1
 ipaddress==1.0.17
 ipython==5.1.0
