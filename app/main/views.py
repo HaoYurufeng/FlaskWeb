@@ -4,7 +4,7 @@
 from datetime import datetime
 from flask import render_template, abort, flash, redirect, url_for, request, current_app
 from . import main
-from ..models import User, Role, Post
+from ..models import User, Role, Post, Permission
 from forms import EditProfileAdminForm, PostForm
 from app import db
 from ..decorators import admin_required
@@ -69,3 +69,28 @@ def output_user_list():
     for user in users:
         list.append(user.username)
     return render_template('user_list.html', list=list, current_time=datetime.utcnow())
+
+@main.route('/post/<int:id>')
+def post(id):
+    post = Post.query.filter_by(id=id).first()
+    if post is None:
+        abort(404)
+    return render_template('post.html', posts=[post])
+
+@main.route('/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit(id):
+    post = Post.query.filter_by(id=id).first()
+    if post is None:
+        abort(404)
+    if current_user != post.author and not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.body = form.body.data
+        db.session.add(post)
+        flash('The post has been updated.')
+        return redirect(url_for('.post', id=post.id))
+    form.body.data = post.body
+    return render_template('edit_post.html', form=form)
+
