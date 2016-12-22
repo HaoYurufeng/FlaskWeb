@@ -9,11 +9,17 @@
 </div>
 
 <div class="container">
+{% if current_user.can(Permission.ADMINISTER) %}
     {% for user in list %}
         <div>
-            <p><a href="{{ url_for('main.edit_profile_admin', username=user) }}">{{ user }}</a></p>
+            <p>{{ user }}
+                <a href="{{ url_for('main.user', username=user) }} " class="btn btn-group-lg">Information</a>
+                <a href="{{ url_for('main.edit_profile_admin', username=user) }}" class="btn btn-group-lg">
+                    Edit</a>
+            </p>
         </div>
     {% endfor %}
+{% endif %}
 </div>
 
 <p>The local date and time is {{ moment(current_time).format('LLLL') }}.</p>
