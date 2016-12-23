@@ -4,8 +4,8 @@
 from datetime import datetime
 from flask import render_template, abort, flash, redirect, url_for, request, current_app, make_response
 from . import main
-from ..models import User, Role, Post, Permission
-from forms import EditProfileAdminForm, PostForm
+from ..models import User, Role, Post, Permission, Comment
+from forms import EditProfileAdminForm, PostForm, CommentForm
 from app import db
 from ..decorators import admin_required, permission_required
 from flask_login import login_required, current_user
@@ -16,6 +16,7 @@ def index():
     if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
         post = Post(body=form.body.data, author=current_user._get_current_object())
         db.session.add(post)
+        db.session.commit()
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
     show_followed = False
@@ -78,6 +79,7 @@ def edit_profile_admin(username):
         user.location = form.location.data
         user.about_me = form.about_me.data
         db.session.add(user)
+        db.session.commit()
         flash('Your profile has been updated.')
         return redirect(url_for('main.user', username=user.username))
     form.email.data = user.email
@@ -101,12 +103,28 @@ def output_user_list():
         list.append(user.username)
     return render_template('user_list.html', list=list, current_time=datetime.utcnow())
 
-@main.route('/post/<int:id>')
+@main.route('/post/<int:id>', methods=['GET', 'POST'])
 def post(id):
     post = Post.query.filter_by(id=id).first()
     if post is None:
         abort(404)
-    return render_template('post.html', posts=[post])
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data,
+                          post=post,
+                          author=current_user._get_current_object())
+        db.session.add(comment)
+        db.session.commit()
+        flash('Your comment has been published.')
+        return redirect(url_for('.post', id=post.id, page=-1))
+    page = request.args.get('page', 1, type=int)
+    if page == -1:
+        page = (post.comments.count() - 1) // current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
+    pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
+            page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+            error_out=False)
+    comments = pagination.items
+    return render_template('post.html', posts=[post], form=form, comments=comments, pagination=pagination)
 
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -120,6 +138,7 @@ def edit(id):
     if form.validate_on_submit():
         post.body = form.body.data
         db.session.add(post)
+        db.session.commit()
         flash('The post has been updated.')
         return redirect(url_for('.post', id=post.id))
     form.body.data = post.body
@@ -153,7 +172,7 @@ def unfollow(username):
     else:
         current_user.unfollow(user)
         flash('Sucessful unfollow.')
-        return redirect(url_for('.user'))
+        return redirect(url_for('.index'))
 
 @main.route('/followers/<username>')
 def followers(username):
