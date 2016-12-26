@@ -223,7 +223,7 @@ class User(UserMixin, db.Model):
         return self.followed.filter_by(followed_id=user.id).first() is not None
 
     def is_followed_by(self, user):
-        return self.followers.filter_by(follower_is=user.id).first() is not None
+        return self.followers.filter_by(follower_id=user.id).first() is not None
 
     '''将自己设置为自己的关注者'''
     def add_self_follows(self):
